@@ -1,0 +1,1 @@
+# là où je code les différentes stratégies de trading
