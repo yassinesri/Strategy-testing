@@ -37,3 +37,16 @@ def plot(*args, title="Time Series Analysis", xlabel="Date", ylabel="Value", fig
         plt.grid(True)
 
     plt.show()
+
+
+def Cumulative_Return():
+    pass
+
+def Max_Drawdown():
+    pass
+
+def Sharpe_Ratio():
+    pass
+
+def MC_Simulation():
+    pass

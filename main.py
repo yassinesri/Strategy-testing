@@ -1,20 +1,19 @@
 import data
-import indicator
-import visualisation
-import matplotlib.pyplot as plt
+import engine
+import strategy
+import analytics
 
 
 def main():
-    ticker = "AAPL"
+    tickers_list = ["AAPL"]
     interval = "1d"
     start_date = "2024-01-01"
     end_date = "2024-12-31"
 
     try:
-        # import data
-        # pour chaque data, appliquer une stratégie (qui donne un signal de trading 
-        # Buy tel truc ou sell tel truc), qui s'applique localement (donc dans la boucle for data in datas)
-        pass
+        data.import_data(tickers_list[0], "Close", interval, start_date, end_date)
+        engine.Simulate_a_Strategy(strategy.Strategy_dumb, data.prices_data)
+        analytics.Cumulative_Returns()
         
     except Exception as e:
         print(f"Error: {e}")

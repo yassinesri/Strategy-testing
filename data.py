@@ -11,6 +11,9 @@ def import_data(ticker: str, column: str,interval: str, start_date: str, end_dat
     - start_date: str | Start date for the data window (for example "2024-01-01").
     - end_date: str | End date for the data window (for example "2024-12-31").
     """
+
+    global prices_data
+
     valid_intervals = {"1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"}
     if interval not in valid_intervals:
         raise ValueError(f"Unsupported interval '{interval}'. Choose one of: {sorted(valid_intervals)}")
@@ -32,10 +35,9 @@ def import_data(ticker: str, column: str,interval: str, start_date: str, end_dat
             f"No data returned for ticker '{ticker}' with interval '{interval}' from {start_date} to {end_date}."
         )
 
-    close_prices = data[column].squeeze().dropna()
-    if close_prices.empty:
+    prices_data = data[column].squeeze().dropna()
+    if prices_data.empty:
         raise RuntimeError(
             f"No {column.lower()} prices available for ticker '{ticker}' with interval '{interval}' from {start_date} to {end_date}."
         )
-
-    return close_prices
+    
