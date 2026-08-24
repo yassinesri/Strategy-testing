@@ -1,5 +1,8 @@
 import pandas as pd
 import numpy as np
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
+
 
 def ROI(total_invested, final_portfolio_value):
     """
@@ -187,56 +190,93 @@ def sortino_ratio(nav_history):
     
     return SR, score
 
-
-def SMA(prices, window):
+def returns(prices):
     """
-    Simple Moving Average (SMA)
+    Computes the successive returns from a sequence of prices.
     Args:
-    - prices: pd.Series | List of closing prices.
-    - window: int | The number of periods to calculate the average over.
-    Returns:
-    - sma_values: pd.Series | List of SMA values
+    - prices : pd.Series or sequence of numeric price values (floats)
     """
-    if window <= 0:
-        raise ValueError("Window size must be a positive integer.")
-    sma = prices.rolling(window=window).mean()
-    return sma
+    series = pd.Series(prices) if not isinstance(prices, pd.Series) else prices
+    rets = series.pct_change()*100
+    mask = series.shift(1) < 1e-5
+    rets = rets.mask(mask, np.nan)
+    return rets
 
-def EMA(prices, window):
+
+def get_gaussian_model(returns_series):
+    """
+    Generates a Gaussian model for some data prices
+    Args:
+    - returns_series : pd.Series | Returns
+    """
+    clean_data = returns_series.dropna()
+    mean = clean_data.mean()
+    std = clean_data.std()
+    
+    x = np.linspace(clean_data.min(), clean_data.max(), 100)
+    y_pdf = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - mean) / std) ** 2)
+    label = f"Model : mean = {mean:.4f} & std = {std:.4f}"
+
+    # Return a pandas Series indexed by x so it can be plotted directly
+    pdf_series = pd.Series(y_pdf, index=x)
+    return pdf_series, label
+
+def KNN_volatility_clustering(returns, volume, window, n_neighbours):
+    """
+    Finds regimes using k-NN clustering on the volatility
+    Args :
+    - returns: pd.Series | List of daily returns (%)
+    - volume: pd.Series | List of daily volumes
+    - window: int | Time window
+    - n_neighbours: int | Number of neighbours
+    """
+    rolling_variance = returns.rolling(window).var()
+    realized_vol_21_days = returns.rolling(window).std() * np.sqrt(252)
+    averaged_volume = volume.rolling(window).mean()
+    relative_volume_spike = volume / averaged_volume
+
+    df = pd.DataFrame({
+        'rolling_variance': rolling_variance,
+        'relative_volume_spike': relative_volume_spike,
+        'realized_vol': realized_vol_21_days
+    }).dropna()
+
+    X = df[['rolling_variance', 'relative_volume_spike']]
+    conditions = [
+        (df['realized_vol'] <= 15),
+        (df['realized_vol'] > 15) & (df['realized_vol'] <= 30),
+        (df['realized_vol'] > 30)
+    ]
+    choices = [0, 1, 2]
+    y = np.select(conditions, choices, default=0)
+
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    knn = KNeighborsClassifier(n_neighbours)
+    knn.fit(X_scaled, y)
+    
+    regimes_predict = knn.predict(X_scaled)
+    df['Predicted_Regime'] = regimes_predict
+
+    return knn, scaler, df
+
+
+def EMA(prices, window=14):
     """
     Exponential Moving Average (EMA)
     Args:
-    - prices: pd.Series | List of closing prices.
-    - window: int | The number of periods to calculate the average over.
+    - prices: pd.Series | List of numeric values.
+    - window: int | The number of periods used for the EMA.
     Returns:
-    - ema: pd.Series | List of EMA values
+    - ema: pd.Series | Exponential moving average values.
     """
     if window <= 0:
         raise ValueError("Window size must be a positive integer.")
-    ema = prices.ewm(span=window, adjust=False).mean()
-    return ema
 
-def MACD(prices, fast_period=12, slow_period=26, signal_period=9):
-    """
-    Moving Average Convergence Divergence (MACD)
-    Args:
-    - prices: pd.Series | List of closing prices.
-    - fast_period: int | The number of periods for the fast EMA.
-    - slow_period: int | The number of periods for the slow EMA.
-    - signal_period: int | The number of periods for the signal line EMA.
-    Returns:
-    - macd_line: pd.Series | MACD line values
-    - signal_line: pd.Series | Signal line values
-    """
-    if fast_period <= 0 or slow_period <= 0 or signal_period <= 0:
-        raise ValueError("All periods must be positive integers.")
-    
-    ema_fast = EMA(prices, window=fast_period)
-    ema_slow = EMA(prices, window=slow_period)
-    macd_line = ema_fast - ema_slow
-    signal_line = EMA(macd_line, window=signal_period)
-    
-    return macd_line, signal_line
+    series = prices if isinstance(prices, pd.Series) else pd.Series(prices)
+    return series.ewm(span=window, adjust=False).mean()
+
 
 def RSI(prices, window=14):
     """

@@ -1,5 +1,5 @@
 class Account :
-    def __init__(self, initial_balance=0):
+    def __init__(self, initial_balance=0, transactional_fees = 0):
         self.balance = initial_balance
         self.positions = {} # {ticker1 : qty , ticker2 : qty , ...}
 

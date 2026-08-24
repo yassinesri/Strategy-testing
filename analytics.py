@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import pandas as pd
+import matplotlib.patches as mpatches
 import indicators
 
 
@@ -71,3 +71,111 @@ def print_statistics(worth_portfolio, nav_history, benchmark_history, total_inve
     print(f"Sortino Ratio: {sortino:.2f}  ({sortino_score})")
 
 
+def returns_analysis(price_history, ch):
+    """
+    Show multiple plots to analyze the returns of a price_history pd.Series
+    Args :
+    - price_history : pd.Series or sequence of numeric price values (floats)
+    - ch : string | Used to label the price history
+    """
+    returns = indicators.returns(price_history)
+    returns_distribution = indicators.returns_distibution(returns)
+
+    plt.figure(figsize=(16,6))
+    plt.plot(returns, "r+", label=ch)
+    plt.xlabel("Date")
+    plt.ylabel("Returns (%)")
+    plt.title("Returns over time (%)")
+    plt.legend()
+    plt.grid()
+
+    plt.figure(figsize=(16,6))
+    plt.plot(returns_distribution, "r+", label=ch)
+    plt.xlabel("Returns (%)")
+    plt.ylabel("Number")
+    plt.title("Returns distribution")
+    plt.legend()
+    plt.grid()
+
+    plt.show()
+
+def returns_analysis(price_history, ch):
+    """
+    Show multiple plots to analyze the returns of a price_history pd.Series
+    Args :
+    - price_history : pd.Series or sequence of numeric price values (floats)
+    - ch : string | Used to label the price history
+    """
+    returns = indicators.returns(price_history).dropna()
+    pdf_series, gauss_label = indicators.get_gaussian_model(returns)
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+
+    ax1.stem(returns.index, returns.values, linefmt='grey', markerfmt='ro', basefmt='k-')
+    ax1.set_xlabel("Date")
+    ax1.set_ylabel("Returns (%)")
+    ax1.set_title(f"Returns over time (%) - {ch}")
+    ax1.grid(True, linestyle='--', alpha=0.5)
+
+    counts, bins, patches = ax2.hist(
+        returns, 
+        bins=30, 
+        color='red', 
+        edgecolor='white', 
+        alpha=0.7,
+        label="Empirical Data"
+    )
+    bin_width = bins[1] - bins[0]
+    y_scaled = pdf_series * len(returns) * bin_width
+    ax2.plot(pdf_series.index, y_scaled, color='black', linewidth=2.5, linestyle='-', label=gauss_label)
+
+    ax2.set_xlabel("Returns (%)")
+    ax2.set_ylabel("Number")
+    ax2.set_title(f"Returns distribution - {ch}")
+    ax2.grid(True, linestyle='--', alpha=0.5)
+    ax2.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+def vol_clustering_analysis(price_history, volume, window=21, n_neighbours=11):
+    """
+    Plots the regimes detected by the k-NN classification
+    Args : 
+    - price_history: pd.Series | List of daily prices
+    - volume: pd.Series | List of daily volumes
+    - window: int | Time window
+    - n_neighbours: int | Number of neighbours
+    """
+    returns = indicators.returns(price_history).dropna()
+
+    _, _, df = indicators.KNN_volatility_clustering(returns, volume, window, n_neighbours)
+
+    color_map = {0: 'limegreen', 1: 'gold', 2: 'crimson'}
+    df['Color'] = df['Predicted_Regime'].map(color_map)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+
+    #1st graph : 
+    ax1.plot(df.index, df['realized_vol'], color='black', alpha=0.2, linewidth=1)
+    ax1.scatter(df.index, df['realized_vol'], c=df['Color'], s=15, zorder=3)
+    ax1.axhspan(0, 15, color='limegreen', alpha=0.1)
+    ax1.axhspan(15, 30, color='gold', alpha=0.1)
+    max_vol = df['realized_vol'].max() + 5 
+    ax1.axhspan(30, max_vol, color='crimson', alpha=0.1)
+    ax1.set_title("KNN CLASSIFICATION OF VOLATILITY CLUSTERING REGIMES", fontweight='bold')
+    ax1.set_ylabel(f"{window}-Day Realized Volatility (%)")
+    ax1.grid(True, linestyle='--', alpha=0.5)
+    ax1.set_ylim(0, max_vol)
+
+    # 2nd graph : 
+    ax2.scatter(df['rolling_variance'], df['relative_volume_spike'], c=df['Color'], s=25, alpha=0.8, edgecolors='black', linewidth=0.5)
+    ax2.set_title(f"2D FEATURE SPACE CLUSTERING (KNN, K={n_neighbours})", fontweight='bold')
+    ax2.set_xlabel("Rolling Return Variance (X-Axis)")
+    ax2.set_ylabel("Relative Volume Spike (Y-Axis)")
+    ax2.grid(True, linestyle='--', alpha=0.5)
+    green_patch = mpatches.Patch(color='limegreen', label='GREEN (0-15%)')
+    yellow_patch = mpatches.Patch(color='gold', label='Medium Volatility (15-30%)')
+    red_patch = mpatches.Patch(color='crimson', label='High (30%+)')
+    ax1.legend(handles=[green_patch, yellow_patch, red_patch], loc='upper left')
+    plt.tight_layout()
+    plt.show()
