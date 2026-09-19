@@ -3,11 +3,12 @@ import matplotlib.patches as mpatches
 import src.analytics.indicators as indicators
 
 
-def plot(*args, title="Time Series Analysis", xlabel="Date", ylabel="Value", figsize=(12, 6), grid=True, legend=True):
+def plot(*args, ax = None, title="Time Series Analysis", xlabel="Date", ylabel="Value", figsize=(12, 6), grid=True, legend=True):
     """
     Plot multiple pandas Series on the same figure.
     Args :
     - *args: Variable length argument list. Should be pairs of (series, label).
+    - ax : matplotlib.axes.Axes | The axes on which to plot. If None, a new figure and axes are created.
     - title: str | Title of the plot.
     - xlabel: str | Label for the x-axis.
     - ylabel: str | Label for the y-axis.
@@ -18,7 +19,8 @@ def plot(*args, title="Time Series Analysis", xlabel="Date", ylabel="Value", fig
     if len(args) % 2 != 0:
         raise ValueError("Expected an even number of arguments: series, label, series, label, ...")
 
-    plt.figure(figsize=figsize)
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize)
 
     for i in range(0, len(args), 2):
         series = args[i]
@@ -27,18 +29,17 @@ def plot(*args, title="Time Series Analysis", xlabel="Date", ylabel="Value", fig
         if not isinstance(label, str):
             raise TypeError("Each label must be a string.")
 
-        plt.plot(series, label=label)
+        ax.plot(series, label=label)
 
-    plt.title(title, fontsize=14)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    ax.set_title(title, fontsize=14)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
 
     if legend:
-        plt.legend()
+        ax.legend()
     if grid:
-        plt.grid(True)
+        ax.grid(True)
 
-    plt.show()
 
 
 def print_statistics(worth_portfolio, nav_history, benchmark_history, total_invested):
@@ -70,17 +71,20 @@ def print_statistics(worth_portfolio, nav_history, benchmark_history, total_inve
     print(f"Sortino Ratio: {sortino:.2f}  ({sortino_score})")
 
 
-def returns_analysis(price_history, ch):
+def returns_analysis(price_history, ch, ax1 = None, ax2 = None):
     """
     Show multiple plots to analyze the returns of a price_history pd.Series
     Args :
     - price_history : pd.Series or sequence of numeric price values (floats)
     - ch : string | Used to label the price history
+    - ax1 : matplotlib.axes.Axes | The axes on which to plot the returns over time. If None, a new axes is created.
+    - ax2 : matplotlib.axes.Axes | The axes on which to plot the returns distribution. If None, a new axes is created.
     """
     returns = indicators.returns(price_history).dropna()
     pdf_series, gauss_label = indicators.get_gaussian_model(returns)
     
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+    if ax1 is None or ax2 is None:
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
 
     ax1.stem(returns.index, returns.values, linefmt='grey', markerfmt='ro', basefmt='k-')
     ax1.set_xlabel("Date")
@@ -106,15 +110,15 @@ def returns_analysis(price_history, ch):
     ax2.grid(True, linestyle='--', alpha=0.5)
     ax2.legend()
 
-    plt.tight_layout()
-    plt.show()
 
-def vol_clustering_analysis(price_history, volume, window=21, n_neighbours=11):
+def vol_clustering_analysis(price_history, volume, ax1=None, ax2=None, window=21, n_neighbours=11):
     """
     Plots the regimes detected by the k-NN classification
     Args : 
     - price_history: pd.Series | List of daily prices
     - volume: pd.Series | List of daily volumes
+    - ax1: matplotlib.axes.Axes | The axes on which to plot the volatility clustering. If None, a new axes is created.
+    - ax2: matplotlib.axes.Axes | The axes on which to plot the 2D feature space. If None, a new axes is created.
     - window: int | Time window
     - n_neighbours: int | Number of neighbours
     """
@@ -124,7 +128,8 @@ def vol_clustering_analysis(price_history, volume, window=21, n_neighbours=11):
 
     color_map = {0: 'limegreen', 1: 'gold', 2: 'crimson'}
     df['Color'] = df['Predicted_Regime'].map(color_map)
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+    if ax1 is None or ax2 is None:
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
 
     #1st graph : 
     ax1.plot(df.index, df['realized_vol'], color='black', alpha=0.2, linewidth=1)
@@ -148,5 +153,3 @@ def vol_clustering_analysis(price_history, volume, window=21, n_neighbours=11):
     yellow_patch = mpatches.Patch(color='gold', label='Medium Volatility (15-30%)')
     red_patch = mpatches.Patch(color='crimson', label='High (30%+)')
     ax1.legend(handles=[green_patch, yellow_patch, red_patch], loc='upper left')
-    plt.tight_layout()
-    plt.show()

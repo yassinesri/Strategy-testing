@@ -2,9 +2,9 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 
-A Python engine for backtesting trading strategies on historical market data.
+A Python engine for backtesting trading strategies on historical market data and generating a consolidated PDF report.
 
-This project is meant to be used for a person investing monthly a certain amount.
+The engine is designed for systematic-investment experiments in which a fixed amount is contributed monthly.
 
 ## Features
 
@@ -14,9 +14,10 @@ This project is meant to be used for a person investing monthly a certain amount
 - Pluggable trading strategies
 - Buy-and-hold benchmark for comparison
 - Portfolio value and NAV tracking
-- Performance statistics
+- Portfolio value and NAV visualizations
 - Return distribution and Gaussian-model visualizations
 - K-nearest-neighbours volatility-clustering analysis
+- Consolidated PDF report containing the generated analytics
 
 ## Engineering approach
 
@@ -76,7 +77,7 @@ portfolio:
   monthly_investment: 200.0
 
 strategies:
-  user_strategy: "moving_average_crossover"
+  user_strategy: "mean_reversion"
 
 analytics:
   volatility_clustering:
@@ -106,14 +107,13 @@ The program will:
 2. Download closing-price and volume data.
 3. Run the selected strategy.
 4. Run a buy-and-hold benchmark with the same monthly investment.
-5. Print portfolio statistics.
-6. Display performance, return, and volatility plots.
+5. Generate a consolidated `backtest_report.pdf` containing performance, return, and volatility plots.
 
-The plotting functions open interactive Matplotlib windows, so the process may remain active until the figures are closed.
+The report is written to the project root. Existing plotting functions can also be reused independently by passing Matplotlib axes to them.
 
 ## Analytics & visualizations
 
-The application generates portfolio-vs-benchmark charts, return time series, return distributions with a Gaussian reference model, and KNN-based volatility-clustering charts using realized volatility and relative volume.
+The application generates a portfolio-vs-benchmark chart, return time series, return distributions with Gaussian reference models, and KNN-based volatility-clustering charts using realized volatility and relative volume. These visualizations are assembled into `backtest_report.pdf` by `src/data/results.py`.
 
 
 
@@ -158,10 +158,12 @@ Its current defaults are:
   |-- data/
   |   |-- load_config.py         # YAML configuration loader
   |   |-- load_financial_data.py # Yahoo Finance data loader
+  |   |-- results.py              # PDF report generation
   |   `-- load_strategy.py       # Strategy name-to-class loader
   `-- strategies/
       |-- base.py               # BaseStrategy abstract class
       |-- buy_and_hold.py
+      |-- dumb_strategy.py       # Experimental strategy implementation
       |-- mean_reversion.py
       `-- moving_average_crossover.py
 ```
@@ -170,7 +172,7 @@ Its current defaults are:
 
 1. Create a module in `src/strategies/`.
 2. Define a class inheriting from `BaseStrategy`.
-3. Implement `init` (with as many arguments as required), `deposit`, `decision`, and `total_invested`.
+3. Implement `__init__` (with any required arguments), `deposit`, `decision`, and `total_invested`.
 4. Add the class to `STRATEGIES` in [load_strategy.py](src/data/load_strategy.py).
 5. Add its string name to the supported values in `config.yaml`.
 
@@ -181,8 +183,12 @@ from .base import BaseStrategy
 
 
 class MyStrategy(BaseStrategy):
+    def __init__(self, ticker, amount_to_invest_monthly):
+        super().__init__(ticker)
+        self.amount_to_invest_monthly = amount_to_invest_monthly
+
     def deposit(self, date):
-        return 0
+        return self.amount_to_invest_monthly
 
     def decision(self, price):
         return "Hold", 0
@@ -197,6 +203,8 @@ The backtest engine instantiates the selected class as follows:
 strategy_class = load_strategy("my_strategy")
 simulate_a_strategy(strategy_class, prices_data, ticker, monthly_investment)
 ```
+
+`simulate_a_strategy` returns two values: portfolio worth history and NAV history. The strategy class receives the ticker and monthly investment through the positional arguments passed to the engine.
 
 ## Notes
 

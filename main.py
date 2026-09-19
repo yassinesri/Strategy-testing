@@ -4,7 +4,9 @@ from src.data.load_config import load_config
 from src.data.load_strategy import load_strategy
 from src.data.load_financial_data import import_data
 from src.core.engine import simulate_a_strategy
+from src.data.results import generate_pdf
 import src.analytics.plotting as plotting
+
 
 # Logging configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -32,30 +34,22 @@ def main():
         # 2. Retrieving data
         prices_data = import_data(ticker, "Close", interval, start_date, end_date)
         volume_data = import_data(ticker, "Volume", interval, start_date, end_date)
+        vol_window = config['analytics']['volatility_clustering']['window']
+        vol_neighbors = config['analytics']['volatility_clustering']['n_neighbours']
 
         # 3. Simulation (Benchmark)
         BuyAndHoldStrategy = load_strategy("buy_and_hold")
-        benchmark_worth, _, _ = simulate_a_strategy(
+        benchmark_worth, _ = simulate_a_strategy(
             BuyAndHoldStrategy, prices_data, ticker, capital)
         
         # 4. Simulation (Users's strategy)
         user_strategy = load_strategy(config['strategies']['user_strategy'])
         
-        portfolio_worth, portfolio_nav, total_invested = simulate_a_strategy(
+        portfolio_worth, portfolio_nav = simulate_a_strategy(
             user_strategy, prices_data, ticker, capital)
 
-        # 5. Vizualization the results
-        logger.info("Generating visualizations and analytics...")
-        vol_window = config['analytics']['volatility_clustering']['window']
-        vol_neighbors = config['analytics']['volatility_clustering']['n_neighbours']
-
-        plotting.plot(portfolio_worth, "Strategy", benchmark_worth, f"Benchmark : {ticker}", title="Worth history", xlabel="Date", ylabel="Worth ($)")
-        plotting.print_statistics(portfolio_worth, portfolio_nav, benchmark_worth, total_invested)
-        plotting.returns_analysis(portfolio_nav, "Portfolio")
-        plotting.returns_analysis(prices_data, f"Benchmark : {ticker}")
-        plotting.vol_clustering_analysis(prices_data, volume_data, vol_window, vol_neighbors)
-        
-        logger.info("Backtest completed successfully.")
+        # 5. Generate PDF report
+        generate_pdf(portfolio_worth, portfolio_nav, benchmark_worth, prices_data, volume_data, ticker, vol_window, vol_neighbors)
 
     except Exception as e:
         logger.error(f"An error occurred during the simulation : {e}")
