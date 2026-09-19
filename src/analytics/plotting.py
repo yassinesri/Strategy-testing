@@ -18,7 +18,7 @@ def plot(*args, title="Time Series Analysis", xlabel="Date", ylabel="Value", fig
     if len(args) % 2 != 0:
         raise ValueError("Expected an even number of arguments: series, label, series, label, ...")
 
-    plt.figure(figsize=figsize)
+    fig, ax = plt.subplots(figsize=figsize)
 
     for i in range(0, len(args), 2):
         series = args[i]
@@ -27,18 +27,18 @@ def plot(*args, title="Time Series Analysis", xlabel="Date", ylabel="Value", fig
         if not isinstance(label, str):
             raise TypeError("Each label must be a string.")
 
-        plt.plot(series, label=label)
+        ax.plot(series, label=label)
 
-    plt.title(title, fontsize=14)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    ax.set_title(title, fontsize=14)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
 
     if legend:
-        plt.legend()
+        ax.legend()
     if grid:
-        plt.grid(True)
+        ax.grid(True)
 
-    plt.show()
+    return fig
 
 
 def print_statistics(worth_portfolio, nav_history, benchmark_history, total_invested):
@@ -106,8 +106,8 @@ def returns_analysis(price_history, ch):
     ax2.grid(True, linestyle='--', alpha=0.5)
     ax2.legend()
 
-    plt.tight_layout()
-    plt.show()
+    return fig
+
 
 def vol_clustering_analysis(price_history, volume, window=21, n_neighbours=11):
     """
@@ -149,4 +149,4 @@ def vol_clustering_analysis(price_history, volume, window=21, n_neighbours=11):
     red_patch = mpatches.Patch(color='crimson', label='High (30%+)')
     ax1.legend(handles=[green_patch, yellow_patch, red_patch], loc='upper left')
     plt.tight_layout()
-    plt.show()
+    return fig
