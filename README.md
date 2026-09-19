@@ -1,30 +1,22 @@
 # Quantitative Strategy Backtesting Engine
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Code style](https://img.shields.io/badge/Code%20style-PEP%208-blue.svg)](https://peps.python.org/pep-0008/)
-[![Tests](https://img.shields.io/badge/Tests-pytest-blue.svg)](https://pytest.org/)
 
-A configuration-driven Python engine for researching and backtesting trading strategies on historical market data.
+A Python engine for backtesting trading strategies on historical market data.
 
-The engine downloads price and volume data from Yahoo Finance, simulates a monthly-investment portfolio, compares a selected strategy with a buy-and-hold benchmark, and produces performance, return-distribution, and volatility-regime analytics.
+This project is meant to be used for a person investing monthly a certain amount.
 
 ## Features
 
+- YAML-based configuration
 - Historical market data download through `yfinance`
 - Monthly cash deposits into a simulated portfolio
-- Pluggable trading strategies with a shared abstract interface
+- Pluggable trading strategies
 - Buy-and-hold benchmark for comparison
 - Portfolio value and NAV tracking
-- Performance statistics:
-  - ROI
-  - Maximum drawdown
-  - Alpha and beta
-  - Sharpe ratio
-  - Sortino ratio
+- Performance statistics
 - Return distribution and Gaussian-model visualizations
-- K-nearest-neighbours volatility-clustering analysis using price returns and volume
-- YAML-based configuration
+- K-nearest-neighbours volatility-clustering analysis
 
 ## Engineering approach
 
@@ -123,9 +115,7 @@ The plotting functions open interactive Matplotlib windows, so the process may r
 
 The application generates portfolio-vs-benchmark charts, return time series, return distributions with a Gaussian reference model, and KNN-based volatility-clustering charts using realized volatility and relative volume.
 
-![Backtest Analytics](docs/backtest_results.png)
 
-> The image above is a placeholder for a representative backtest output. Add a generated figure at `docs/backtest_results.png` when publishing results.
 
 ## Available strategies
 
@@ -176,29 +166,11 @@ Its current defaults are:
       `-- moving_average_crossover.py
 ```
 
-## Testing & quality assurance
-
-Run the test suite from the project root:
-
-```bash
-python -m pytest
-```
-
-For static analysis, install the optional development tools and run:
-
-```bash
-python -m pip install pytest mypy ruff
-python -m mypy src
-python -m ruff check .
-```
-
-The repository currently provides the application and strategy modules; add tests under `tests/` as the strategy library grows. High-value tests should cover strategy decisions, monthly deposit behavior, invalid configuration names, portfolio accounting, and indicator edge cases.
-
 ## Adding a strategy
 
 1. Create a module in `src/strategies/`.
 2. Define a class inheriting from `BaseStrategy`.
-3. Implement `deposit`, `decision`, and `total_invested`.
+3. Implement `init` (with as many arguments as required), `deposit`, `decision`, and `total_invested`.
 4. Add the class to `STRATEGIES` in [load_strategy.py](src/data/load_strategy.py).
 5. Add its string name to the supported values in `config.yaml`.
 

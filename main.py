@@ -35,7 +35,7 @@ def main():
 
         # 3. Simulation (Benchmark)
         BuyAndHoldStrategy = load_strategy("buy_and_hold")
-        benchmark_worth, benchmark_nav, _ = simulate_a_strategy(
+        benchmark_worth, _, _ = simulate_a_strategy(
             BuyAndHoldStrategy, prices_data, ticker, capital)
         
         # 4. Simulation (Users's strategy)

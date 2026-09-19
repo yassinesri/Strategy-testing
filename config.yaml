@@ -13,8 +13,8 @@ portfolio:
 
 # Strategy-specific parameters
 strategies:
-  # Options: "moving_average_crossover", "mean_reversion", "buy_and_hold"
-  user_strategy: "buy_and_hold"  
+  # Available strategies: "moving_average_crossover", "mean_reversion", "buy_and_hold"
+  user_strategy: "mean_reversion"  
 
 
 # Analytics parameters
