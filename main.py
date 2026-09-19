@@ -34,6 +34,8 @@ def main():
         # 2. Retrieving data
         prices_data = import_data(ticker, "Close", interval, start_date, end_date)
         volume_data = import_data(ticker, "Volume", interval, start_date, end_date)
+        vol_window = config['analytics']['volatility_clustering']['window']
+        vol_neighbors = config['analytics']['volatility_clustering']['n_neighbours']
 
         # 3. Simulation (Benchmark)
         BuyAndHoldStrategy = load_strategy("buy_and_hold")
@@ -46,18 +48,8 @@ def main():
         portfolio_worth, portfolio_nav = simulate_a_strategy(
             user_strategy, prices_data, ticker, capital)
 
-        # 5. Vizualization the results
-        logger.info("Generating visualizations and analytics...")
-        vol_window = config['analytics']['volatility_clustering']['window']
-        vol_neighbors = config['analytics']['volatility_clustering']['n_neighbours']
-
-        fig_worth = plotting.plot(portfolio_worth, "Strategy", benchmark_worth, f"Benchmark : {ticker}", title="Worth history", xlabel="Date", ylabel="Worth ($)")
-        fig_returns_strategy = plotting.returns_analysis(portfolio_nav, "Portfolio")
-        fig_returns_benchmark = plotting.returns_analysis(prices_data, f"Benchmark : {ticker}")
-        fig_vol = plotting.vol_clustering_analysis(prices_data, volume_data, vol_window, vol_neighbors)
-
-        # 6. Generate PDF report
-        generate_pdf(fig_worth, fig_returns_strategy, fig_returns_benchmark, fig_vol)
+        # 5. Generate PDF report
+        generate_pdf(portfolio_worth, portfolio_nav, benchmark_worth, prices_data, volume_data, ticker, vol_window, vol_neighbors)
 
     except Exception as e:
         logger.error(f"An error occurred during the simulation : {e}")
