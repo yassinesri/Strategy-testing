@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import indicators
+import src.analytics.indicators as indicators
 
 
 def plot(*args, title="Time Series Analysis", xlabel="Date", ylabel="Value", figsize=(12, 6), grid=True, legend=True):
@@ -53,9 +53,8 @@ def print_statistics(worth_portfolio, nav_history, benchmark_history, total_inve
     if total_invested is None:
         total_invested = worth_portfolio.iloc[0]
 
-    roi_portfolio, roi_score = indicators.ROI(total_invested, worth_portfolio.iloc[-1])
-    roi_benchmark, _ = indicators.ROI(total_invested, benchmark_history.iloc[-1])
-    max_drawdown, md_score = indicators.Max_Drawdown(worth_portfolio)
+    roi_portfolio, roi_score = indicators.roi(total_invested, worth_portfolio.iloc[-1])
+    max_drawdown, md_score = indicators.max_drawdown(worth_portfolio)
     beta_value, beta_score = indicators.beta(benchmark_history, worth_portfolio)
     alpha_value, alpha_score = indicators.alpha(benchmark_history, worth_portfolio, beta_value)
     sharpe, sharpe_score = indicators.sharpe_ratio(worth_portfolio)

@@ -1,4 +1,4 @@
-import yfinance as yf
+from yfinance import download
 
 
 def import_data(ticker: str, column: str,interval: str, start_date: str, end_date: str):
@@ -17,7 +17,7 @@ def import_data(ticker: str, column: str,interval: str, start_date: str, end_dat
         raise ValueError(f"Unsupported interval '{interval}'. Choose one of: {sorted(valid_intervals)}")
 
     try:
-        data = yf.download(
+        data = download(
             ticker,
             start=start_date,
             end=end_date,

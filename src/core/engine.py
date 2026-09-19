@@ -1,7 +1,7 @@
-import portfolio
+import src.core.portfolio as portfolio
 import pandas as pd
 
-def Simulate_a_Strategy(a_strategy, data, *args):
+def simulate_a_strategy(a_strategy, data, *args):
     """
     Simulates a given strategy on historical data.
     Args :

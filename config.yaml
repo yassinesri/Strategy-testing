@@ -1,0 +1,24 @@
+# General parameters
+simulation:
+  ticker: "WPEA.PA"
+  interval: "1d"
+  start_date: "2023-01-01"
+  end_date: "2025-12-31"
+
+
+# Portfolio parameters
+portfolio:
+  monthly_investment: 200.0
+
+
+# Strategy-specific parameters
+strategies:
+  # Options: "moving_average_crossover", "mean_reversion", "buy_and_hold"
+  user_strategy: "buy_and_hold"  
+
+
+# Analytics parameters
+analytics:
+  volatility_clustering:
+    window: 21
+    n_neighbours: 15
