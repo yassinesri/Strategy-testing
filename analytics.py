@@ -78,34 +78,6 @@ def returns_analysis(price_history, ch):
     - price_history : pd.Series or sequence of numeric price values (floats)
     - ch : string | Used to label the price history
     """
-    returns = indicators.returns(price_history)
-    returns_distribution = indicators.returns_distibution(returns)
-
-    plt.figure(figsize=(16,6))
-    plt.plot(returns, "r+", label=ch)
-    plt.xlabel("Date")
-    plt.ylabel("Returns (%)")
-    plt.title("Returns over time (%)")
-    plt.legend()
-    plt.grid()
-
-    plt.figure(figsize=(16,6))
-    plt.plot(returns_distribution, "r+", label=ch)
-    plt.xlabel("Returns (%)")
-    plt.ylabel("Number")
-    plt.title("Returns distribution")
-    plt.legend()
-    plt.grid()
-
-    plt.show()
-
-def returns_analysis(price_history, ch):
-    """
-    Show multiple plots to analyze the returns of a price_history pd.Series
-    Args :
-    - price_history : pd.Series or sequence of numeric price values (floats)
-    - ch : string | Used to label the price history
-    """
     returns = indicators.returns(price_history).dropna()
     pdf_series, gauss_label = indicators.get_gaussian_model(returns)
     
@@ -119,7 +91,7 @@ def returns_analysis(price_history, ch):
 
     counts, bins, patches = ax2.hist(
         returns, 
-        bins=30, 
+        bins=50, 
         color='red', 
         edgecolor='white', 
         alpha=0.7,
