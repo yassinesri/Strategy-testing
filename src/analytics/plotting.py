@@ -31,7 +31,7 @@ def plot(*args, ax = None, title="Time Series Analysis", xlabel="Date", ylabel="
 
         ax.plot(series, label=label)
 
-    ax.set_title(title, fontsize=14)
+    ax.set_title(title, fontweight='bold')
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
 
@@ -89,15 +89,15 @@ def returns_analysis(price_history, ch, ax1 = None, ax2 = None):
     ax1.stem(returns.index, returns.values, linefmt='grey', markerfmt='ro', basefmt='k-')
     ax1.set_xlabel("Date")
     ax1.set_ylabel("Returns (%)")
-    ax1.set_title(f"Returns over time (%) - {ch}")
+    ax1.set_title(f"{ch} - Returns over time (%)", fontweight='bold')
     ax1.grid(True, linestyle='--', alpha=0.5)
 
-    counts, bins, patches = ax2.hist(
+    _, bins, _ = ax2.hist(
         returns, 
         bins=50, 
         color='red', 
         edgecolor='white', 
-        alpha=0.7,
+        alpha=0.5,
         label="Empirical Data"
     )
     bin_width = bins[1] - bins[0]
@@ -106,7 +106,7 @@ def returns_analysis(price_history, ch, ax1 = None, ax2 = None):
 
     ax2.set_xlabel("Returns (%)")
     ax2.set_ylabel("Number")
-    ax2.set_title(f"Returns distribution - {ch}")
+    ax2.set_title(f"{ch} - Returns distribution", fontweight='bold')
     ax2.grid(True, linestyle='--', alpha=0.5)
     ax2.legend()
 

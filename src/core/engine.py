@@ -50,5 +50,6 @@ def simulate_a_strategy(a_strategy, data, *args):
         nav_history.append(nav)
 
     worth_history = pd.Series(worth_history, index=data.index)
+    nav_history = pd.Series(nav_history, index=data.index)
 
     return worth_history, nav_history

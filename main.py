@@ -48,8 +48,12 @@ def main():
         portfolio_worth, portfolio_nav = simulate_a_strategy(
             user_strategy, prices_data, ticker, capital)
 
+        logger.info("Simulation completed successfully.")
+
         # 5. Generate PDF report
         generate_pdf(portfolio_worth, portfolio_nav, benchmark_worth, prices_data, volume_data, ticker, vol_window, vol_neighbors)
+
+        logger.info("PDF report generated successfully.")
 
     except Exception as e:
         logger.error(f"An error occurred during the simulation : {e}")

@@ -11,7 +11,7 @@ The engine is designed for systematic-investment experiments in which a fixed am
 - YAML-based configuration
 - Historical market data download through `yfinance`
 - Monthly cash deposits into a simulated portfolio
-- Pluggable trading strategies
+- Pluggable trading strategies, including intraday strategies for 5-minute data
 - Buy-and-hold benchmark for comparison
 - Portfolio value and NAV tracking
 - Portfolio value and NAV visualizations
@@ -69,9 +69,9 @@ Edit [config.yaml](config.yaml) before running a backtest:
 ```yaml
 simulation:
   ticker: "WPEA.PA"
-  interval: "1d"
-  start_date: "2023-01-01"
-  end_date: "2025-12-31"
+  interval: "5m"
+  start_date: "2026-07-29"
+  end_date: "2026-09-19"
 
 portfolio:
   monthly_investment: 200.0
@@ -90,6 +90,9 @@ Supported values for `strategies.user_strategy` are:
 - `buy_and_hold`
 - `mean_reversion`
 - `moving_average_crossover`
+- `test_strategy`
+
+Yahoo Finance restricts the amount of historical data available for intraday intervals such as `5m`. Adjust the date range to remain within the provider's availability window for the selected interval.
 
 The ticker must use Yahoo Finance's symbol format. For example, `AAPL` represents Apple on the US market and `WPEA.PA` represents a Paris-listed instrument.
 
@@ -141,6 +144,15 @@ Its current defaults are:
 - Window: `20`
 - Threshold: `0.02` (2 percent)
 
+### Intraday drop and rebound
+
+`test_strategy` is designed for intraday data, such as the configured `5m` interval. At the start of each day it records the first observed price. If the price falls by `drop_threshold` from that reference, it sells the full position. While out of the position, it tracks the lowest observed price and buys the full position again when the price rebounds by `rise_threshold` from that low.
+
+Its current defaults are:
+
+- Drop threshold: `0.02` (2 percent)
+- Rise threshold: `0.02` (2 percent)
+
 ## Project structure
 
 ```text
@@ -163,9 +175,9 @@ Its current defaults are:
   `-- strategies/
       |-- base.py               # BaseStrategy abstract class
       |-- buy_and_hold.py
-      |-- dumb_strategy.py       # Experimental strategy implementation
       |-- mean_reversion.py
-      `-- moving_average_crossover.py
+      |-- moving_average_crossover.py
+      `-- test_strategy.py       # Intraday drop-and-rebound strategy
 ```
 
 ## Adding a strategy

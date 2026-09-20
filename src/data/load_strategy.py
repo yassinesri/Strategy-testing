@@ -4,12 +4,14 @@ from src.strategies.base import BaseStrategy
 from src.strategies.buy_and_hold import BuyAndHold
 from src.strategies.mean_reversion import MeanReversion
 from src.strategies.moving_average_crossover import MovingAverageCrossover
+from src.strategies.test import TestStrategy
 
 
 STRATEGIES: dict[str, Type[BaseStrategy]] = {
 	"buy_and_hold": BuyAndHold,
 	"mean_reversion": MeanReversion,
 	"moving_average_crossover": MovingAverageCrossover,
+	"test_strategy": TestStrategy,
 }
 
 
